@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surreal Minimal Portfolio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #050505;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        .noise {
+            position: fixed;
+            inset: 0;
+            z-index: -5;
+            opacity: 0.03;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        .gradient-orb {
+            position: fixed;
+            width: 40vw;
+            height: 40vw;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -10;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        .cursor {
+            width: 32px;
+            height: 32px;
+            border: 1px solid white;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: difference;
+            transition: transform 0.1s ease;
+        }
+
+        .nav-glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-hidden {
+            transform: translate(-50%, -120%);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s ease;
+        }
+
+        .nav-visible {
+            transform: translate(-50%, 0);
+            opacity: 1;
+            pointer-events: auto;
+            transition: all 0.4s ease;
+        }
+
+        .project-img-container {
+            overflow: hidden;
+            border-radius: 1.5rem;
+            aspect-ratio: 16/10;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .project-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(1) brightness(0.8);
+            transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .project-card:hover .project-img {
+            filter: grayscale(0) brightness(1);
+            transform: scale(1.05);
+        }
+
+        .void-container {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 40px;
+            height: 60vh;
+            cursor: crosshair;
+        }
+
+        .void-shape {
+            position: absolute;
+            pointer-events: none;
+            filter: blur(20px);
+        }
+
+        /* VOID CORE */
+
+        .void-section {
+            background: radial-gradient(
+                circle at center,
+                #050505,
+                #000 70%
+            );
+            cursor: none;
+        }
+
+        .void-noise {
+            position: absolute;
+            inset: 0;
+            background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+            opacity: 0.05;
+            pointer-events: none;
+            mix-blend-mode: overlay;
+        }
+
+        .void-glow {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.08), transparent 70%);
+            filter: blur(120px);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+        }
+
+        .void-title {
+            font-size: clamp(3rem, 8vw, 7rem);
+            letter-spacing: 0.4em;
+            color: white;
+            opacity: 0.9;
+        }
+
+        .void-text {
+            margin-top: 2rem;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.15em;
+            transition: opacity 0.3s;
+        }
+
+        /* particles */
+
+        .void-particles span {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            opacity: 0.15;
+            border-radius: 50%;
+            transition: transform 0.2s linear;
+        }
+
+        .void-section.idle .void-glow {
+            animation: voidPulse 4s infinite alternate;
+        }
+
+        @keyframes voidPulse {
+            from {
+                opacity: 0.1;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 0.25;
+                transform: scale(1.2);
+            }
+        }
+
+        .lang-btn {
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            opacity: 0.4;
+            transition: opacity 0.3s;
+        }
+
+        .lang-btn:hover {
+            opacity: 1;
+        }
+
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Hide scrollbar */
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* ===== MINI PLAYER ===== */
+
+        /* BOTÕES */
+        .player-btn {
+            color: white;
+            font-size: 14px;
+            opacity: .7;
+            transition: .2s;
+        }
+        .player-btn:hover {
+            opacity: 1;
+        }
+
+        /* EQUALIZER */
+        .bar {
+            width: 3px;
+            height: 100%;
+            background: rgba(204, 180, 220);
+            border-radius: 2px;
+            transform-origin: bottom;
+            animation: eq 1s infinite ease-in-out;
+        }
+
+        .bar:nth-child(1) { animation-delay: 0s; }
+        .bar:nth-child(2) { animation-delay: .15s; }
+        .bar:nth-child(3) { animation-delay: .3s; }
+        .bar:nth-child(4) { animation-delay: .45s; }
+
+        @keyframes eq {
+            0% { transform: scaleY(.3); }
+            50% { transform: scaleY(1); }
+            100% { transform: scaleY(.4); }
+        }
+
+        /* MINI PLAYER */
+        .mini-player {
+            position: fixed;
+
+            right: 24px;
+            bottom: 24px;
+
+            width: 320px;
+            max-width: calc(100vw - 32px);
+
+            background: rgba(20, 20, 20, 0.55);
+            backdrop-filter: blur(28px) saturate(140%);
+            -webkit-backdrop-filter: blur(28px) saturate(140%);
+
+            border-radius: 22px;
+            padding: 16px 16px 18px;
+
+            box-shadow:
+                0 25px 60px rgba(0,0,0,.45),
+                inset 0 0 0 1px rgba(255,255,255,.08);
+
+            z-index: 9998;
+
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+
+            user-select: none;
+
+            transition:
+                transform .45s cubic-bezier(.22,1,.36,1),
+                opacity .35s ease;
+        }
+
+        /* estado fechado */
+        .mini-player.minimized {
+            transform: translateY(120%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .mini-player.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+        }
+
+        .mini-toggle {
+            position: fixed;
+            right: 26px;
+            bottom: 18px;
+
+            width: 42px;
+            height: 42px;
+
+            border-radius: 50%;
+
+            background: rgba(20,20,20,.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+
+            border: 1px solid rgba(255,255,255,.12);
+
+            color: white;
+            font-size: 18px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            cursor: pointer;
+
+            z-index: 9998;
+
+            opacity: 0;
+            pointer-events: none;
+
+            transition: .4s ease;
+        }
+
+        .mini-toggle.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .mini-toggle:hover {
+            transform: translateY(-3px);
+        }
+
+        .drag-handle {
+            width: 36px;
+            height: 6px;
+            border-radius: 6px;
+            margin: 0 auto 4px;
+
+            background:
+                radial-gradient(circle, #aaa 1px, transparent 1px) 0 0 / 6px 6px,
+                radial-gradient(circle, #aaa 1px, transparent 1px) 3px 3px / 6px 6px;
+
+            opacity: .4;
+            cursor: grab;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .vinyl {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            margin: auto;
+            overflow: hidden;
+
+            background: #000;
+            box-shadow:
+                inset 0 0 0 6px #111,
+                inset 0 0 0 12px #000,
+                0 0 25px rgba(0,0,0,.8);
+
+            animation: spin 4s linear infinite;
+        }
+
+        .vinyl img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .mini-info {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .mini-info img {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .mini-info p {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            line-height: 1.2;
+        }
+
+        .mini-info span {
+            font-size: 11px;
+            opacity: .6;
+        }
+
+        .mini-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .mini-controls button {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.08);
+
+            font-size: 18px;
+            color: white;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            transition: .2s ease;
+        }
+
+        .mini-controls button:hover {
+            background: rgba(255,255,255,.12);
+            transform: scale(1.08);
+        }
+
+        .mini-close {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+
+            opacity: .6;
+            font-size: 14px;
+        }
+
+        .mini-close:hover {
+            opacity: 1;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="cursor" id="cursor"></div>
+    <div class="noise"></div>
+    <div class="gradient-orb bg-purple-900 top-[-10%] left-[-10%] animate-pulse"></div>
+    <div class="gradient-orb bg-blue-900 bottom-[-10%] right-[-10%]"></div>
+
+    <!-- Preloader -->
+    <div id="loader" class="fixed inset-0 z-[10000] bg-black flex items-center justify-center">
+        <div class="text-white tracking-[1.5em] font-light text-xs uppercase animate-pulse">
+            Initializing Dream
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-6 py-3 nav-glass rounded-full nav-visible">
+        <button onclick="scrollToSection('about')" style="cursor: none;" class="nav-link px-4 py-1.5 rounded-full text-sm font-medium text-white/60 hover:text-white transition-all" data-pt="Identidade" data-en="Identity">Identity</button>
+        <button onclick="scrollToSection('work')" style="cursor: none;" class="nav-link px-4 py-1.5 rounded-full text-sm font-medium text-white/60 hover:text-white transition-all" data-pt="Ecos" data-en="Echoes">Echoes</button>
+        <button onclick="scrollToSection('cool')" style="cursor: none;" class="nav-link px-4 py-1.5 rounded-full text-sm font-medium text-white/60 hover:text-white transition-all" data-pt="O Vazio" data-en="The Void">The Void</button>
+        <div class="w-px h-4 bg-white/20 mx-2"></div>
+        <button onclick="toggleLanguage()" style="cursor: none;" class="lang-btn font-bold text-white" id="lang-toggle">EN</button>
+    </nav>
+
+    <main class="relative z-10">
+        <!-- Hero Section -->
+        <section id="home" class="px-6 text-center">
+            <div class="reveal">
+                <span class="text-xs tracking-[0.4em] uppercase text-white/40 mb-6 block">Portfolio / 2024</span>
+                <h1 class="text-5xl md:text-8xl font-light tracking-tighter text-white mb-8 italic" id="hero-title" 
+                    data-en="Curating Digital Dreams" 
+                    data-pt="Curadoria de Sonhos Digitais">
+                    Curating Digital Dreams
+                </h1>
+                <p class="text-lg text-white/60 max-w-md mx-auto leading-relaxed font-light" id="hero-sub"
+                   data-en="A convergence of surrealism and minimal utility."
+                   data-pt="Uma convergência entre surrealismo e utilidade minimalista.">
+                    A convergence of surrealism and minimal utility.
+                </p>
+            </div>
+            <div class="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce">
+                <div class="w-[1px] h-12 bg-gradient-to-b from-white/0 via-white/50 to-white/0"></div>
+            </div>
+        </section>
+
+        <!-- Identity Section -->
+        <section id="about" class="py-32 px-6 max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+                <div class="relative aspect-[4/5] overflow-hidden rounded-2xl group">
+                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=800" 
+                         class="w-full h-full object-cover grayscale brightness-75 transition-all duration-700 group-hover:scale-105" alt="Portrait">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#050505] to-transparent opacity-60"></div>
+                    <div class="absolute bottom-8 left-8">
+                        <h3 class="text-3xl italic text-white font-light">Gustavo Munhoz</h3>
+                        <p class="text-white/40 text-sm">Est. 2008 / Earth</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-xs uppercase tracking-[0.3em] text-white/30 mb-8 flex items-center gap-4">
+                        <span class="w-8 h-px bg-white/20"></span> <span data-en="Fragmented History" data-pt="História Fragmentada">Fragmented History</span>
+                    </h2>
+                    <p class="text-2xl md:text-3xl text-white/80 leading-snug mb-12 font-light" 
+                       data-en="I build bridges between the impossible and the functional. Born in the intersections of code and canvas."
+                       data-pt="Construo pontes entre o impossível e o funcional. Nascido nas interseções do código e da tela.">
+                        I build bridges between the impossible and the functional. Born in the intersections of code and canvas.
+                    </p>
+
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="p-6 border border-white/5 rounded-xl hover:bg-white/5 transition-colors cursor-default flex justify-between items-center">
+                            <span class="text-white/60 font-light" data-en="Binary Poet" data-pt="Poeta Binário">Binary Poet</span>
+                            <span class="text-white/20">01</span>
+                        </div>
+                        <div class="p-6 border border-white/5 rounded-xl hover:bg-white/5 transition-colors cursor-default flex justify-between items-center">
+                            <span class="text-white/60 font-light" data-en="Dream Architect" data-pt="Arquiteto de Sonhos">Dream Architect</span>
+                            <span class="text-white/20">✨</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-16 pt-8 border-t border-white/5">
+                        <h4 class="text-[10px] uppercase tracking-[0.2em] text-white/30 mb-6"
+                            data-en="Frequency"
+                            data-pt="Frequência">
+                            Frequency
+                        </h4>
+                        <!-- PLAYER PRINCIPAL -->
+                        <div id="playerCard"
+                            class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 hover:border-green-500/30 transition-all">
+                            <!-- CAPA -->
+                            <div class="relative w-12 h-12 rounded-lg overflow-hidden shrink-0">
+                                <img id="mainCover"
+                                     src="https://upload.wikimedia.org/wikipedia/en/thumb/8/8c/Gore_-_Deftones.png/250px-Gore_-_Deftones.png"
+                                     class="object-cover w-full h-full"
+                                     alt="Album">
+                            </div>
+                            <!-- INFO -->
+                            <div class="flex-1 overflow-hidden">
+                                <p id="trackTitle"
+                                   class="text-sm text-white font-medium truncate">
+                                    Deftones — Prayers / Triangles
+                                </p>
+                            </div>
+                            <!-- EQUALIZER -->
+                            <div id="equalizer" class="ml-auto flex gap-[3px] items-end h-5">
+                                <span class="bar"></span>
+                                <span class="bar"></span>
+                                <span class="bar"></span>
+                                <span class="bar"></span>
+                            </div>
+                            <!-- CONTROLES -->
+                            <div class="flex gap-2 ml-2">
+                                <button id="btnPrev" class="player-btn">⏮</button>
+                                <button id="btnPlay" class="player-btn">▶</button>
+                                <button id="btnNext" class="player-btn">⏭</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <audio id="audioPlayer" preload="none"></audio>
+                </div>
+            </div>
+        </section>
+
+        <!-- Portfolio Section -->
+        <section id="work" class="py-32 px-6">
+            <div class="max-w-6xl mx-auto mb-20">
+                <h2 class="text-5xl md:text-7xl font-light text-white tracking-tighter italic" data-en="Manifestations" data-pt="Manifestações">Manifestations</h2>
+            </div>
+
+            <div class="max-w-7xl mx-auto space-y-32">
+                <!-- Project 1 -->
+                <div class="flex flex-col md:flex-row gap-12 items-center project-card">
+                    <div class="w-full md:w-3/5 project-img-container">
+                        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=800" class="project-img" alt="Work">
+                    </div>
+                    <div class="w-full md:w-2/5">
+                        <span class="text-[10px] font-bold tracking-[0.3em] text-white/20 mb-4 block">PROJECT 01</span>
+                        <h3 class="text-4xl text-white mb-6 font-light">Aether Engine</h3>
+                        <p class="text-white/50 mb-8 leading-relaxed" data-en="A spatial audio experiment." data-pt="Um experimento de áudio espacial.">A spatial audio experiment.</p>
+                        <button class="group flex items-center gap-3 text-white font-light hover:gap-6 transition-all">
+                            <span data-en="Enter" data-pt="Entrar">Enter</span> ➔
+                        </button>
+                    </div>
+                </div>
+                <!-- Project 2 -->
+                <div class="flex flex-col md:flex-row-reverse gap-12 items-center project-card">
+                    <div class="w-full md:w-3/5 project-img-container">
+                        <img src="https://images.unsplash.com/photo-1633167606207-d840b5070fc2?auto=format&fit=crop&q=80&w=800" class="project-img" alt="Work">
+                    </div>
+                    <div class="w-full md:w-2/5">
+                        <span class="text-[10px] font-bold tracking-[0.3em] text-white/20 mb-4 block">PROJECT 02</span>
+                        <h3 class="text-4xl text-white mb-6 font-light">Liquid Geometry</h3>
+                        <p class="text-white/50 mb-8 leading-relaxed" data-en="Generative branding for the future." data-pt="Branding generativo para o futuro.">Generative branding for the future.</p>
+                        <button class="group flex items-center gap-3 text-white font-light hover:gap-6 transition-all">
+                            <span data-en="Enter" data-pt="Entrar">Enter</span> ➔
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Void Section -->
+        <section id="cool" class="void-section relative min-h-screen overflow-hidden">
+            <!-- background noise -->
+            <div class="void-noise"></div>
+            <!-- distortion glow -->
+            <div class="void-glow"></div>
+            <!-- particles -->
+            <div class="void-particles" id="voidParticles"></div>
+            <!-- content -->
+            <div class="relative z-10 text-center px-8">
+                <h2 class="void-title">
+                    THE VOID
+                </h2>
+
+                <p class="void-text">
+                    The void is not empty.<br>
+                    It is only waiting.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="py-20 px-6 border-t border-white/5 text-center md:text-left">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+            <div>
+                <h3 class="text-2xl text-white font-light italic">Gustavo.</h3>
+                <p class="text-white/20 text-[10px] tracking-widest uppercase mt-1">Digital Experience © 2026</p>
+            </div>
+            <div class="flex gap-8 text-white/40">
+                <a href="https://www.github.com/Gustaawn" class="hover:text-white transition-colors">Github</a>
+                <a href="mailto:munhozlimagustavo@gmail.com" class="hover:text-white transition-colors">E-mail</a>
+                <a href="#" class="hover:text-white transition-colors">Instagram</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MINI PLAYER FLUTUANTE -->
+    <div id="miniPlayer" class="mini-player hidden">
+        <!-- DRAG HANDLE -->
+        <div class="drag-handle" id="dragHandle"></div>
+            <button id="closeMini" class="mini-close">⌄</button>
+            <div class="vinyl">
+                <img id="vinylImg">
+            </div>
+            <div class="mini-info">
+                <img id="miniCover">
+                <div>
+                    <p id="miniTitle">Track</p>
+                    <span>Now Playing</span>
+                </div>
+            </div>
+            <div class="mini-controls">
+                <button id="miniRestart">⟲</button>
+                <button id="miniPlay">⏸</button>
+                <button id="miniNext">⏭</button>
+            </div>
+        </div>
+    </div>
+    <div id="miniToggle" class="mini-toggle">▲</div>
+
+    <script>
+        // Language State
+        let currentLang = 'en';
+
+        // Custom Cursor
+        const cursor = document.getElementById('cursor');
+        document.addEventListener('mousemove', (e) => {
+            gsap.to(cursor, {
+                x: e.clientX - 16,
+                y: e.clientY - 16,
+                duration: 0.1
+            });
+        });
+
+        // Toggle Language
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'pt' : 'en';
+            document.getElementById('lang-toggle').innerText = currentLang.toUpperCase();
+            
+            document.querySelectorAll('[data-en]').forEach(el => {
+                el.innerText = el.getAttribute(`data-${currentLang}`);
+            });
+        }
+
+        // Smooth Scroll
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        const nav = document.getElementById("navbar");
+
+        let lastScroll = window.scrollY;
+        let isHidden = false;
+
+        // hides on scroll
+        window.addEventListener("scroll", () => {
+            const currentScroll = window.scrollY;
+
+            if (currentScroll > lastScroll && currentScroll > 80) {
+                if (!isHidden) {
+                    nav.classList.remove("nav-visible");
+                    nav.classList.add("nav-hidden");
+                    isHidden = true;
+                }
+            }
+
+            lastScroll = currentScroll;
+        });
+
+        // show when mouse hits the top
+        document.addEventListener("mousemove", (e) => {
+            if (e.clientY <= 40) {
+                nav.classList.remove("nav-hidden");
+                nav.classList.add("nav-visible");
+                isHidden = false;
+            }
+        });
+
+        // Scroll Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        window.onload = () => {
+            // Remove Loader
+            gsap.to("#loader", {
+                opacity: 0,
+                duration: 1,
+                onComplete: () => document.getElementById('loader').remove()
+            });
+
+            // Hero Animation
+            gsap.from("#home .reveal", {
+                y: 50,
+                opacity: 0,
+                duration: 1.5,
+                ease: "power4.out",
+                delay: 0.5
+            });
+
+            // Section Reveal
+            document.querySelectorAll('section').forEach(section => {
+                gsap.from(section, {
+                    scrollTrigger: {
+                        trigger: section,
+                        start: "top 80%",
+                    },
+                    opacity: 0,
+                    y: 30,
+                    duration: 1,
+                    ease: "power2.out"
+                });
+            });
+
+            // Project Images Parallax
+            document.querySelectorAll('.project-img').forEach(img => {
+                gsap.to(img, {
+                    scrollTrigger: {
+                        trigger: img,
+                        start: "top bottom",
+                        end: "bottom top",
+                        scrub: true
+                    },
+                    y: -50
+                });
+            });
+        };
+
+        /* MUSIC PLAYER */
+
+        const tracks = [
+            {
+                title: "Deftones — Prayers / Triangles",
+                src: "music/track1.mp3",
+                cover: "https://upload.wikimedia.org/wikipedia/en/8/8c/Gore_-_Deftones.png"
+            },
+            {
+                title: "Deftones — Hearts / Wires",
+                src: "music/track2.mp3",
+                cover: "https://upload.wikimedia.org/wikipedia/en/8/8c/Gore_-_Deftones.png"
+            }
+        ];
+
+        let current = 0;
+        let started = false;
+
+        const audio = document.getElementById("audioPlayer");
+
+        const playBtn = document.getElementById("btnPlay");
+        const miniPlay = document.getElementById("miniPlay");
+        const mini = document.getElementById("miniPlayer");
+
+        const title = document.getElementById("trackTitle");
+        const miniTitle = document.getElementById("miniTitle");
+
+        const cover = document.getElementById("mainCover");
+        const miniCover = document.getElementById("miniCover");
+        const vinyl = document.getElementById("vinylImg");
+
+        function loadTrack(i) {
+            const t = tracks[i];
+            audio.src = t.src;
+            title.textContent = t.title;
+            miniTitle.textContent = t.title;
+            cover.src = t.cover;
+            miniCover.src = t.cover;
+            vinyl.src = t.cover;
+        }
+
+        loadTrack(current);
+
+        function playPause() {
+            if (audio.paused) {
+                audio.play();
+                playBtn.textContent = "⏸";
+                miniPlay.textContent = "⏸";
+
+                if (!started) {
+                    mini.classList.remove("hidden");
+                    started = true;
+                }
+            } else {
+                audio.pause();
+                playBtn.textContent = "▶";
+                miniPlay.textContent = "▶";
+            }
+        }
+
+        playBtn.onclick = playPause;
+        miniPlay.onclick = playPause;
+
+        document.getElementById("btnNext").onclick =
+        document.getElementById("miniNext").onclick = () => {
+            current = (current + 1) % tracks.length;
+            loadTrack(current);
+            audio.play();
+        };
+
+        document.getElementById("btnPrev").onclick =
+        document.getElementById("miniRestart").onclick = () => {
+            audio.currentTime = 0;
+        };
+
+        document.getElementById("closeMini").onclick = () => {
+            mini.classList.add("hidden");
+        };
+
+        /* DRAG MINI PLAYER*/
+        const handle = document.getElementById("dragHandle");
+        const toggle = document.getElementById("miniToggle");
+
+        let dragging = false;
+        let startX, startY;
+        let startLeft, startTop;
+
+        function clamp(value, min, max) {
+            return Math.min(Math.max(value, min), max);
+        }
+
+        handle.addEventListener("mousedown", e => {
+            dragging = true;
+
+            const rect = mini.getBoundingClientRect();
+
+            startX = e.clientX;
+            startY = e.clientY;
+
+            startLeft = rect.left;
+            startTop = rect.top;
+
+            mini.style.left = startLeft + "px";
+            mini.style.top = startTop + "px";
+            mini.style.right = "auto";
+            mini.style.bottom = "auto";
+
+            document.body.style.userSelect = "none";
+        });
+
+        document.addEventListener("mousemove", e => {
+            if (!dragging) return;
+
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+            const width = mini.offsetWidth;
+            const height = mini.offsetHeight;
+
+            const x = clamp(
+                startLeft + dx,
+                8,
+                window.innerWidth - width - 8
+            );
+
+            const y = clamp(
+                startTop + dy,
+                8,
+                window.innerHeight - height - 8
+            );
+
+            mini.style.left = x + "px";
+            mini.style.top = y + "px";
+        });
+
+        document.addEventListener("mouseup", () => {
+            dragging = false;
+            document.body.style.userSelect = "";
+        });
+
+        /* CLOSE / OPEN ANIMATION */
+
+        document.getElementById("closeMini").onclick = () => {
+            mini.classList.add("minimized");
+            toggle.classList.add("visible");
+        };
+
+        toggle.onclick = () => {
+            mini.classList.remove("minimized");
+            toggle.classList.remove("visible");
+        };
+
+        /* ===== THE VOID SAFE MODE ===== */
+
+        const voidSection = document.querySelector(".void-section");
+
+        if (voidSection) {
+
+            const glow = voidSection.querySelector(".void-glow");
+            const particlesContainer = document.getElementById("voidParticles");
+
+            // create particles
+            for (let i = 0; i < 80; i++) {
+                const p = document.createElement("span");
+                p.style.left = Math.random() * 100 + "%";
+                p.style.top = Math.random() * 100 + "%";
+                particlesContainer.appendChild(p);
+            }
+
+            voidSection.addEventListener("mousemove", e => {
+
+                const rect = voidSection.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                glow.style.left = x + "px";
+                glow.style.top = y + "px";
+
+                voidSection.querySelectorAll(".void-particles span").forEach(p => {
+
+                    const dx = x - p.offsetLeft;
+                    const dy = y - p.offsetTop;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 120) {
+                        p.style.transform =
+                            `translate(${dx * -0.3}px, ${dy * -0.3}px)`;
+                    } else {
+                        p.style.transform = "translate(0,0)";
+                    }
+
+                });
+            });
+
+            let idleTimer;
+
+            voidSection.addEventListener("mousemove", () => {
+                clearTimeout(idleTimer);
+                voidSection.classList.remove("idle");
+
+                idleTimer = setTimeout(() => {
+                    voidSection.classList.add("idle");
+                }, 2500);
+            });
+
+        }
+    </script>
+</body>
+</html>
