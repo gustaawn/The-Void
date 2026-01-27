@@ -17,6 +17,17 @@
             cursor: none;
         }
 
+        .no-browser,
+        .no-browser * {
+            cursor: none !important;
+            user-select: none !important;
+        }input,
+        textarea,
+        select {
+            cursor: text !important;
+            user-select: text !important;
+        }
+
         .noise {
             position: fixed;
             inset: 0;
@@ -38,6 +49,7 @@
         }
 
         .cursor {
+            backdrop-filter: blur(3px);
             width: 32px;
             height: 32px;
             border: 1px solid white;
@@ -46,7 +58,7 @@
             pointer-events: none;
             z-index: 9999;
             mix-blend-mode: difference;
-            transition: transform 0.1s ease;
+            transform: translate(-50%, -50%) scale(1);
         }
 
         .nav-glass {
@@ -197,7 +209,7 @@
         ::-webkit-scrollbar { display: none; }
         * { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* ===== MINI PLAYER ===== */
+        /* MINI PLAYER */
 
         /* BOTÕES */
         .player-btn {
@@ -252,7 +264,7 @@
                 0 25px 60px rgba(0,0,0,.45),
                 inset 0 0 0 1px rgba(255,255,255,.08);
 
-            z-index: 9998;
+            z-index: 9997;
 
             display: flex;
             flex-direction: column;
@@ -431,7 +443,7 @@
 
     </style>
 </head>
-<body>
+<body class="no-browser">
 
     <div class="cursor" id="cursor"></div>
     <div class="noise"></div>
@@ -440,8 +452,24 @@
 
     <!-- Preloader -->
     <div id="loader" class="fixed inset-0 z-[10000] bg-black flex items-center justify-center">
-        <div class="text-white tracking-[1.5em] font-light text-xs uppercase animate-pulse">
-            Initializing Dream
+        <div class="text-white tracking-[1.5em] font-light text-xs uppercase animate-pulse">Initializing Dream</div>
+    </div>
+
+    <!-- Overlay -->
+    <div id="floatingOverlay" class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/60 backdrop-blur-md">
+
+        <!-- Modal -->
+        <div id="floatingMenu" class="relative w-[90%] max-w-3xl max-h-[85vh] overflow-y-auto bg-white/5 border border-white/10 rounded-3xl p-10 text-white scale-95 opacity-0 transition-all duration-300 ease-out">
+            <!-- Botão fechar -->
+            <button id="closeMenu" class="absolute top-6 right-6 text-white/50 hover:text-white text-2xl transition">✕</button>
+
+            <!-- Conteúdo -->
+            <h2 id="menuTitle" class="text-3xl font-semibold mb-6"></h2>
+
+            <div id="menuContent" class="space-y-6 text-white/70 leading-relaxed">
+                <!-- conteúdo dinâmico -->
+            </div>
+
         </div>
     </div>
 
@@ -484,7 +512,11 @@
                     <div class="absolute inset-0 bg-gradient-to-t from-[#050505] to-transparent opacity-60"></div>
                     <div class="absolute bottom-8 left-8">
                         <h3 class="text-3xl italic text-white font-light">Gustavo Munhoz</h3>
-                        <p class="text-white/40 text-sm">Est. 2008 / Earth</p>
+                        <p class="text-white/40 text-sm"
+                        data-en="Est. 2008 / Earth"
+                        data-pt="Desde 2008 / Terra">
+                        Est. 2008 / Earth
+                        </p>
                     </div>
                 </div>
 
@@ -498,15 +530,29 @@
                         I build bridges between the impossible and the functional. Born in the intersections of code and canvas.
                     </p>
 
+                    <!-- Buttons -->
                     <div class="grid grid-cols-1 gap-4">
-                        <div class="p-6 border border-white/5 rounded-xl hover:bg-white/5 transition-colors cursor-default flex justify-between items-center">
-                            <span class="text-white/60 font-light" data-en="Binary Poet" data-pt="Poeta Binário">Binary Poet</span>
-                            <span class="text-white/20">01</span>
-                        </div>
-                        <div class="p-6 border border-white/5 rounded-xl hover:bg-white/5 transition-colors cursor-default flex justify-between items-center">
-                            <span class="text-white/60 font-light" data-en="Dream Architect" data-pt="Arquiteto de Sonhos">Dream Architect</span>
-                            <span class="text-white/20">✨</span>
-                        </div>
+                        <button
+                            class="w-full text-left p-6 border border-white/5 rounded-xl hover:bg-white/5 transition-colors flex justify-between items-center cursor-none"
+                            data-floating-menu="biography"
+                            data-menu="biography"
+                            data-en="A biography of myself"
+                            data-pt="Uma autobiografia">
+                            <span class="text-white/60 font-light">
+                                A biography of myself
+                            </span>
+                            <span class="text-white/20 text-xl">📖</span>
+                        </button>
+                        <button
+                            class="w-full text-left p-6 border border-white/5 rounded-xl hover:bg-white/5 transition-colors flex justify-between items-center cursor-none"
+                            data-floating-menu="dream"
+                            data-menu="dream">
+                            <span class="text-white/60 font-light">
+                                Dream Architect
+                            </span>
+                            <span class="text-white/20 text-xl">✨</span>
+                        </button>
+
                     </div>
 
                     <div class="mt-16 pt-8 border-t border-white/5">
@@ -517,7 +563,7 @@
                         </h4>
                         <!-- PLAYER PRINCIPAL -->
                         <div id="playerCard"
-                            class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 hover:border-green-500/30 transition-all">
+                            class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 hover:border-fuchsia-400/30 transition-all">
                             <!-- CAPA -->
                             <div class="relative w-12 h-12 rounded-lg overflow-hidden shrink-0">
                                 <img id="mainCover"
@@ -527,10 +573,7 @@
                             </div>
                             <!-- INFO -->
                             <div class="flex-1 overflow-hidden">
-                                <p id="trackTitle"
-                                   class="text-sm text-white font-medium truncate">
-                                    Deftones — Prayers / Triangles
-                                </p>
+                                <p id="trackTitle" class="text-sm text-white font-medium truncate">Deftones — Prayers / Triangles</p>
                             </div>
                             <!-- EQUALIZER -->
                             <div id="equalizer" class="ml-auto flex gap-[3px] items-end h-5">
@@ -601,14 +644,9 @@
             <div class="void-particles" id="voidParticles"></div>
             <!-- content -->
             <div class="relative z-10 text-center px-8">
-                <h2 class="void-title">
-                    THE VOID
-                </h2>
+                <h2 class="void-title">THE VOID</h2>
 
-                <p class="void-text">
-                    The void is not empty.<br>
-                    It is only waiting.
-                </p>
+                <p class="void-text">The void is not empty.</p>
             </div>
         </section>
     </main>
@@ -616,13 +654,13 @@
     <footer class="py-20 px-6 border-t border-white/5 text-center md:text-left">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
             <div>
-                <h3 class="text-2xl text-white font-light italic">Gustavo.</h3>
-                <p class="text-white/20 text-[10px] tracking-widest uppercase mt-1">Digital Experience © 2026</p>
+                <h3 class="text-2xl text-white font-light italic">The Void.</h3>
+                <p class="text-white/20 text-[10px] tracking-widest uppercase mt-1">Gustavo Munhoz Lima © 2026</p>
             </div>
             <div class="flex gap-8 text-white/40">
                 <a href="https://www.github.com/Gustaawn" class="hover:text-white transition-colors">Github</a>
                 <a href="mailto:munhozlimagustavo@gmail.com" class="hover:text-white transition-colors">E-mail</a>
-                <a href="#" class="hover:text-white transition-colors">Instagram</a>
+                <a href="https://www.instagram.com/gustaawn" class="hover:text-white transition-colors">Instagram</a>
             </div>
         </div>
     </footer>
@@ -643,8 +681,8 @@
                 </div>
             </div>
             <div class="mini-controls">
-                <button id="miniRestart">⟲</button>
-                <button id="miniPlay">⏸</button>
+                <button id="miniRestart" style="font-weight: bold;">⟲</button>
+                <button id="miniPlay">❚❚</button>
                 <button id="miniNext">⏭</button>
             </div>
         </div>
@@ -656,12 +694,74 @@
         let currentLang = 'en';
 
         // Custom Cursor
-        const cursor = document.getElementById('cursor');
-        document.addEventListener('mousemove', (e) => {
+        const cursor = document.getElementById("cursor");
+
+        let isHovering = false;
+
+        // movimento
+        document.addEventListener("mousemove", e => {
             gsap.to(cursor, {
-                x: e.clientX - 16,
-                y: e.clientY - 16,
-                duration: 0.1
+                x: e.clientX,
+                y: e.clientY,
+                duration: 0.15,
+                ease: "power3.out"
+            });
+        });
+
+
+        // elementos clicáveis
+        const clickableSelectors = `
+            a,
+            button,
+            [role="button"],
+            input,
+            textarea,
+            select,
+            label,
+            [onclick],
+            .clickable
+        `;
+
+        document.querySelectorAll(clickableSelectors).forEach(el => {
+
+            el.addEventListener("mouseenter", () => {
+                isHovering = true;
+
+                gsap.to(cursor, {
+                    scale: 1.35,
+                    duration: 0.25,
+                    ease: "power3.out"
+                });
+            });
+
+            el.addEventListener("mouseleave", () => {
+                isHovering = false;
+
+                gsap.to(cursor, {
+                    scale: 1,
+                    duration: 0.25,
+                    ease: "power3.out"
+                });
+            });
+        });
+
+
+        // clique 
+        document.addEventListener("mousedown", () => {
+            gsap.to(cursor, {
+                scale: 0.75,
+                duration: 0.12,
+                ease: "power2.out"
+            });
+        });
+
+
+        // soltar clique
+        document.addEventListener("mouseup", () => {
+            gsap.to(cursor, {
+                scale: isHovering ? 1.8 : 1,
+                duration: 0.2,
+                ease: "power3.out"
             });
         });
 
@@ -689,7 +789,7 @@
         window.addEventListener("scroll", () => {
             const currentScroll = window.scrollY;
 
-            if (currentScroll > lastScroll && currentScroll > 80) {
+            if ( currentScroll > 80) {
                 if (!isHidden) {
                     nav.classList.remove("nav-visible");
                     nav.classList.add("nav-hidden");
@@ -757,18 +857,123 @@
             });
         };
 
+        const overlay = document.getElementById("floatingOverlay");
+        const floatingMenu = document.getElementById("floatingMenu");
+        const menuTitle = document.getElementById("menuTitle");
+        const menuContent = document.getElementById("menuContent");
+        const closeBtn = document.getElementById("closeMenu");
+
+        // abrir
+        document.querySelectorAll("[data-menu]").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const key = btn.dataset.floatingMenu;
+
+                menuTitle.innerHTML = menuData[key].rdyTitle;
+                menuContent.innerHTML = menuData[key].rdyContent;
+
+                overlay.classList.remove("hidden");
+                overlay.classList.add("flex");
+
+                requestAnimationFrame(() => {
+                    floatingMenu.classList.remove("scale-95", "opacity-0");
+                    floatingMenu.classList.add("scale-100", "opacity-100");
+                });
+            });
+        });
+
+        // fechar função
+        function closeMenu() {
+            floatingMenu.classList.add("scale-95", "opacity-0");
+
+            setTimeout(() => {
+                overlay.classList.add("hidden");
+                overlay.classList.remove("flex");
+            }, 250);
+        }
+
+        // X
+        closeBtn.addEventListener("click", closeMenu);
+
+        // clicar fora
+        overlay.addEventListener("click", e => {
+            if (e.target === overlay) closeMenu();
+        });
+
+        const menuData = {
+            biography: {
+                rdyTitle: "Binary Poet",
+                rdyContent: `
+                    <div>
+                        <h3 class="text-xl text-white mb-2">Sobre</h3>
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus dolor justo,
+                            dictum non tincidunt non, consectetur ut nibh.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl text-white mb-2">Características</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Lorem ipsum</li>
+                            <li>Lorem ipsum</li>
+                            <li>Lorem ipsum</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl text-white mb-2">Manifesto</h3>
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                        </p>
+                    </div>
+                `
+            },
+            dream: {
+                rdyTitle: "Dream Architect",
+                rdyContent: `
+                    <div>
+                        <h3 class="text-xl text-white mb-2">Descrição</h3>
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus dolor justo,
+                            dictum non tincidunt non, consectetur ut nibh.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl text-white mb-2">O que cria</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Lorem ipsum</li>
+                            <li>Lorem ipsum</li>
+                            <li>Lorem ipsum</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl text-white mb-2">Filosofia</h3>
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                        </p>
+                    </div>
+                `
+            }
+        };
+
         /* MUSIC PLAYER */
 
         const tracks = [
             {
-                title: "Deftones — Prayers / Triangles",
+                title: "Prayers / Triangles",
+                miniTitle: "Deftones — Gore",
                 src: "music/track1.mp3",
-                cover: "https://upload.wikimedia.org/wikipedia/en/8/8c/Gore_-_Deftones.png"
+                cover: "music/cover1.jpg",
+                vinyl: "music/vinyl1.png"
             },
             {
-                title: "Deftones — Hearts / Wires",
+                title: "Hearts / Wires",
+                miniTitle: "Deftones — Gore",
                 src: "music/track2.mp3",
-                cover: "https://upload.wikimedia.org/wikipedia/en/8/8c/Gore_-_Deftones.png"
+                cover: "music/cover2.jpg",
+                vinyl: "music/vinyl2.png"
             }
         ];
 
@@ -792,19 +997,18 @@
             const t = tracks[i];
             audio.src = t.src;
             title.textContent = t.title;
-            miniTitle.textContent = t.title;
+            miniTitle.textContent = t.miniTitle;
             cover.src = t.cover;
-            miniCover.src = t.cover;
-            vinyl.src = t.cover;
+            miniCover.src = t.miniCover;
+            vinyl.src = t.vinyl;
         }
 
         loadTrack(current);
-
         function playPause() {
             if (audio.paused) {
                 audio.play();
-                playBtn.textContent = "⏸";
-                miniPlay.textContent = "⏸";
+                playBtn.textContent = "❚❚";
+                miniPlay.textContent = "❚❚";
 
                 if (!started) {
                     mini.classList.remove("hidden");
@@ -836,7 +1040,7 @@
             mini.classList.add("hidden");
         };
 
-        /* DRAG MINI PLAYER*/
+        /* DRAG MINI PLAYER */
         const handle = document.getElementById("dragHandle");
         const toggle = document.getElementById("miniToggle");
 
@@ -909,7 +1113,7 @@
             toggle.classList.remove("visible");
         };
 
-        /* ===== THE VOID SAFE MODE ===== */
+        /* THE VOID */
 
         const voidSection = document.querySelector(".void-section");
 
