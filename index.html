@@ -329,7 +329,7 @@
         }
 
         .mini-toggle:hover {
-            transform: translateY(-3px);
+            transform: translateY(-5px);
         }
 
         .drag-handle {
@@ -476,7 +476,7 @@
     <!-- Navigation -->
     <nav id="navbar" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-6 py-3 nav-glass rounded-full nav-visible">
         <button onclick="scrollToSection('about')" style="cursor: none;" class="nav-link px-4 py-1.5 rounded-full text-sm font-medium text-white/60 hover:text-white transition-all" data-pt="Identidade" data-en="Identity">Identity</button>
-        <button onclick="scrollToSection('work')" style="cursor: none;" class="nav-link px-4 py-1.5 rounded-full text-sm font-medium text-white/60 hover:text-white transition-all" data-pt="Ecos" data-en="Echoes">Echoes</button>
+        <button onclick="scrollToSection('work')" style="cursor: none;" class="nav-link px-4 py-1.5 rounded-full text-sm font-medium text-white/60 hover:text-white transition-all" data-pt="Ecos" data-en="Echoes">Reality</button>
         <button onclick="scrollToSection('cool')" style="cursor: none;" class="nav-link px-4 py-1.5 rounded-full text-sm font-medium text-white/60 hover:text-white transition-all" data-pt="O Vazio" data-en="The Void">The Void</button>
         <div class="w-px h-4 bg-white/20 mx-2"></div>
         <button onclick="toggleLanguage()" style="cursor: none;" class="lang-btn font-bold text-white" id="lang-toggle">EN</button>
@@ -486,16 +486,20 @@
         <!-- Hero Section -->
         <section id="home" class="px-6 text-center">
             <div class="reveal">
-                <span class="text-xs tracking-[0.4em] uppercase text-white/40 mb-6 block">Portfolio / 2024</span>
+                <span class="text-xs tracking-[0.4em] uppercase text-white/40 mb-6 block"
+                data-en="Portfolio / 2026"
+                data-pt="Portfólio / 2026">
+                Portfolio / 2026
+                </span>
                 <h1 class="text-5xl md:text-8xl font-light tracking-tighter text-white mb-8 italic" id="hero-title" 
-                    data-en="Curating Digital Dreams" 
-                    data-pt="Curadoria de Sonhos Digitais">
-                    Curating Digital Dreams
+                    data-en="A Book Of Reality" 
+                    data-pt="Um Livro Da Realidade">
+                    A Book Of Reality
                 </h1>
                 <p class="text-lg text-white/60 max-w-md mx-auto leading-relaxed font-light" id="hero-sub"
-                   data-en="A convergence of surrealism and minimal utility."
-                   data-pt="Uma convergência entre surrealismo e utilidade minimalista.">
-                    A convergence of surrealism and minimal utility.
+                   data-en="A convergence of dreams and surrealism."
+                   data-pt="Uma convergência entre sonhos e surrealismo.">
+                   A convergence of dreams and surrealism.
                 </p>
             </div>
             <div class="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce">
@@ -513,9 +517,9 @@
                     <div class="absolute bottom-8 left-8">
                         <h3 class="text-3xl italic text-white font-light">Gustavo Munhoz</h3>
                         <p class="text-white/40 text-sm"
-                        data-en="Est. 2008 / Earth"
+                        data-en="Since 2008 / Earth"
                         data-pt="Desde 2008 / Terra">
-                        Est. 2008 / Earth
+                        Since 2008 / Earth
                         </p>
                     </div>
                 </div>
@@ -536,17 +540,19 @@
                             class="w-full text-left p-6 border border-white/5 rounded-xl hover:bg-white/5 transition-colors flex justify-between items-center cursor-none"
                             data-floating-menu="biography"
                             data-menu="biography"
-                            data-en="A biography of myself"
-                            data-pt="Uma autobiografia">
+                            data-en="A Biography Of Myself"
+                            data-pt="Uma Autobiografia">
                             <span class="text-white/60 font-light">
-                                A biography of myself
+                                A Biography Of Myself
                             </span>
                             <span class="text-white/20 text-xl">📖</span>
                         </button>
                         <button
                             class="w-full text-left p-6 border border-white/5 rounded-xl hover:bg-white/5 transition-colors flex justify-between items-center cursor-none"
                             data-floating-menu="dream"
-                            data-menu="dream">
+                            data-menu="dream"
+							data-en="Dream Architect"
+                            data-pt="Arquiteto de Sonhos">
                             <span class="text-white/60 font-light">
                                 Dream Architect
                             </span>
@@ -573,7 +579,8 @@
                             </div>
                             <!-- INFO -->
                             <div class="flex-1 overflow-hidden">
-                                <p id="trackTitle" class="text-sm text-white font-medium truncate">Deftones — Prayers / Triangles</p>
+                                <p id="trackTitle" class="text-sm text-white font-medium truncate">Prayers / Triangles</p>
+                                <p id="artistTitle" class="text-xs text-white/50 font-medium truncate">Deftones — Gore</p>
                             </div>
                             <!-- EQUALIZER -->
                             <div id="equalizer" class="ml-auto flex gap-[3px] items-end h-5">
@@ -669,7 +676,7 @@
     <div id="miniPlayer" class="mini-player hidden">
         <!-- DRAG HANDLE -->
         <div class="drag-handle" id="dragHandle"></div>
-            <button id="closeMini" class="mini-close">⌄</button>
+            <button id="closeMini" class="mini-close">▼</button>
             <div class="vinyl">
                 <img id="vinylImg">
             </div>
@@ -963,17 +970,35 @@
         const tracks = [
             {
                 title: "Prayers / Triangles",
-                miniTitle: "Deftones — Gore",
-                src: "music/track1.mp3",
-                cover: "music/cover1.jpg",
-                vinyl: "music/vinyl1.png"
+                miniTitle: "Deftones - Prayers / Triangles",
+                artistTitle: "Deftones — Gore",
+                src: "music/prayers.mp3",
+                cover: "music/prayers.jpg",
+                vinyl: "music/gore.png"
+            },
+            {
+                title: "Everlong",
+                miniTitle: "Foo Fighters - Everlong",
+                artistTitle: "Foo Fighters — The Colour and the Shape",
+                src: "music/everlong.mp3",
+                cover: "music/everlong.jpg",
+                vinyl: "music/colourandshape.png"
             },
             {
                 title: "Hearts / Wires",
-                miniTitle: "Deftones — Gore",
-                src: "music/track2.mp3",
-                cover: "music/cover2.jpg",
-                vinyl: "music/vinyl2.png"
+                miniTitle: "Deftones - Hearts / Wires",
+                artistTitle: "Deftones — Gore",
+                src: "music/hearts.mp3",
+                cover: "music/hearts.jpg",
+                vinyl: "music/gore.png"
+            },
+            {
+                title: "Hearts / Wires",
+                miniTitle: "Deftones - Hearts / Wires",
+                artistTitle: "Deftones — Gore",
+                src: "music/hearts.mp3",
+                cover: "music/hearts.jpg",
+                vinyl: "music/gore.png"
             }
         ];
 
@@ -988,6 +1013,7 @@
 
         const title = document.getElementById("trackTitle");
         const miniTitle = document.getElementById("miniTitle");
+        const artistTitle = document.getElementById("artistTitle");
 
         const cover = document.getElementById("mainCover");
         const miniCover = document.getElementById("miniCover");
@@ -998,8 +1024,9 @@
             audio.src = t.src;
             title.textContent = t.title;
             miniTitle.textContent = t.miniTitle;
+            artistTitle.textContent = t.artistTitle;
             cover.src = t.cover;
-            miniCover.src = t.miniCover;
+            miniCover.src = t.cover;
             vinyl.src = t.vinyl;
         }
 
